@@ -125,7 +125,7 @@ describe "User pages" do
     describe "page" do
       it { should have_selector('h1',     text: "Update your profile") }
       it { should have_selector('title',  text: "Edit user") }
-      it { should have_link('change',  href: 'http://gravatar.com/emails') }
+      it { should have_link('Change',  href: 'http://gravatar.com/emails') }
     end
 
     describe "with invalid information" do
@@ -150,6 +150,14 @@ describe "User pages" do
       it { should have_link('Sign out', href: signout_path) }
       specify { user.reload.name.should == new_name }
       specify { user.reload.email.should == new_email }
+    end
+  end
+
+  describe "accessible attributes" do
+    it "should not allow access to admin" do
+      expect do
+        User.new(admin: 'true')
+      end.to raise_error(ActiveModel::MassAssignmentSecurity::Error)
     end
   end
 end

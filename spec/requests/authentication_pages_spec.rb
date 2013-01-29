@@ -38,13 +38,21 @@ describe "AuthenticationPages" do
 			it { should have_link('Settings', 	href: edit_user_path(user)) }
 			it { should have_link('Sign out', 	href: signout_path) }
 			it { should_not have_link('Sign in', href: signin_path) }
+			
+			describe "when visiting the sign up page"
+				before { visit signup_path }
+				#before { visit new_user_path }
+				specify { response.should redirect_to(root_path) }
+			end
 				
 			describe "followed by signout" do
 				before { click_link "Sign out" }
 				it { should have_link('Sign in') }
 			end
+
+
 		end
-	end
+	
 
 	describe "authorization" do
 		describe "for non-signed-in users" do
@@ -66,7 +74,6 @@ describe "AuthenticationPages" do
 					before { visit users_path }
 					it { should have_selector('title', text: 'Sign in') }
 				end
-
 			end
 		end
 
@@ -101,12 +108,25 @@ describe "AuthenticationPages" do
 		describe "for non-signed-in users" do
 			let(:user) { FactoryGirl.create(:user) }
 
+			describe "when visiting home page" do
+				before { visit root_path }
+
+				it { should_not have_link('Settings',		href: edit_user_path(user)) }
+				it { should_not have_link('Profile',		href: user_path(user)) }
+			end
+
+			describe "when visiting about page" do
+				before { visit about_path }
+
+				it { should_not have_link('Settings',		href: edit_user_path(user)) }
+				it { should_not have_link('Profile',		href: user_path(user)) }
+			end
+
+
 			describe "when attempting to visit a protected page" do
 				before do
 					visit edit_user_path(user)
-					fill_in "Email", 			with: user.email
-					fill_in "Password", 	with: user.password
-					click_button "Sign in"
+					sign_in(user)
 				end
 
 				describe "after signing in" do
