@@ -30,6 +30,13 @@ describe "User pages" do
       end
     end
 
+    describe "admin deleting himself" do
+      let(:admin) { FactoryGirl.create(:admin) }
+      it "should not be possible" do
+        expect { delete user_path(admin) }.to_not change(User, :count).by(-1)
+      end
+    end
+
     describe "delete links" do
 
       it { should_not have_link('delete') }
@@ -97,7 +104,7 @@ describe "User pages" do
         fill_in "Name",     with: "Example User"
         fill_in "Email",    with: "user@example.com"
         fill_in "Password", with: "foobar"
-        fill_in "Password confirmation", with: "foobar"
+        fill_in "Confirm Password", with: "foobar"
       end
 
     it "should create a user" do

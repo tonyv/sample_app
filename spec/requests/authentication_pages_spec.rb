@@ -30,7 +30,6 @@ describe "AuthenticationPages" do
 			let(:user)	{ FactoryGirl.create(:user) }
 			before { valid_signin(user) }
 
-
 			it { should have_selector('title', text: user.name) }
 		
 			it { should have_link('Users', 			href: users_path) }
@@ -39,20 +38,25 @@ describe "AuthenticationPages" do
 			it { should have_link('Sign out', 	href: signout_path) }
 			it { should_not have_link('Sign in', href: signin_path) }
 			
-			describe "when visiting the sign up page"
+			# If they're signed in that they can't sign up so redirect to home page
+			describe "visiting the sign up page" do
 				before { visit signup_path }
-				#before { visit new_user_path }
+				it { should have_selector('title', 	text: 'Ruby on Rails Tutorial') }
+				it { should have_error_message('You can not sign up if you are signed in') }
+			end
+
+			describe "trying to POST create a user" do
+				before { post users_path }
 				specify { response.should redirect_to(root_path) }
 			end
-				
+
 			describe "followed by signout" do
 				before { click_link "Sign out" }
 				it { should have_link('Sign in') }
 			end
-
-
 		end
-	
+	end
+
 
 	describe "authorization" do
 		describe "for non-signed-in users" do
@@ -133,6 +137,19 @@ describe "AuthenticationPages" do
 
 					it "should render the desired protected page" do
 						page.should have_selector('title', text: 'Edit user')
+					end
+
+					describe "when signing in again" do
+						before do
+							visit signin_path
+							fill_in "Email",		with: user.email
+							fill_in "Password", with: user.password
+							click_button "Sign in"
+						end
+
+						it "should render the default (profile) page" do
+							page.should have_selector('title', text: user.name)
+						end
 					end
 				end
 			end

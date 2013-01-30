@@ -2,7 +2,7 @@ class UsersController < ApplicationController
   before_filter :signed_in_user, only: [:index, :edit, :update, :destroy]
   before_filter :correct_user,   only: [:edit, :update]
   before_filter :admin_user,     only: :destroy
- 
+
   def index
     @users = User.paginate(page: params[:page])
   end
@@ -15,19 +15,24 @@ class UsersController < ApplicationController
     if !signed_in?
       @user = User.new
     else
+      flash[:error] = 'You can not sign up if you are signed in'
       redirect_to root_path
     end
   end
   
   def create
-  	@user = User.new(params[:user])
-  	if @user.save
-      sign_in @user
-  		flash[:success] = "Welcome to the Sample App!"
-			redirect_to @user
-		else
-  		render 'new'
-  	end
+    if signed_in?
+      redirect_to @user
+    else
+    	@user = User.new(params[:user])
+    	if @user.save
+        sign_in @user
+    		flash[:success] = "Welcome to the Sample App!"
+  			redirect_to @user
+  		else
+    		render 'new'
+    	end      
+    end
   end
 
   def edit
@@ -44,8 +49,13 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User destroyed"
+    user = User.find(params[:id])
+    if(current_user? user) && (current_user.admin?)
+      flash[:error] = "Admin user can\'t delete himself"
+    else
+      user.destroy
+      flash[:success] = "User destroyed"
+    end
     redirect_to users_path
   end
 
